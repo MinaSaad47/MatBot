@@ -1,4 +1,4 @@
-# DisBot
+# MatBot
 simple discord to post university materials as embids to discord server
 
 
