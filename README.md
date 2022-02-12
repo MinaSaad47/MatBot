@@ -8,4 +8,4 @@ simple discord to post university materials as embids to discord server
 - [ ] implementing the bot using [serenity](https://github.com/serenity-rs/serenity)
 
 ### Optional
-- [] tui
+- [ ] tui
