@@ -5,10 +5,10 @@ use serde_json;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
-    discord_token: String,
-    database_path: String,
-    main_channel_id: String,
-    alternative_channel_id: String
+    pub discord_token: String,
+    pub database_path: String,
+    pub main_channel_id: String,
+    pub alternative_channel_id: String
 }
 
 impl Config {
