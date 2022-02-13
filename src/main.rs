@@ -1,4 +1,4 @@
-use  disbot::config::Config;
+use  matbot::config::Config;
 
 fn main() {
     let conf = Config::from_json_file("settings.json");

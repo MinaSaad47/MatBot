@@ -1,5 +1,5 @@
 [package]
-name = "disbot"
+name = "matbot"
 version = "0.1.0"
 edition = "2021"
 
