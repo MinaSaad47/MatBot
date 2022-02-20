@@ -5,10 +5,16 @@ use serde_json;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
+    #[serde(rename(deserialize = "discord token"))]
     pub discord_token: String,
+    #[serde(rename(deserialize = "database path"))]
     pub database_path: String,
+    #[serde(rename(deserialize = "main channel id"))]
     pub main_channel_id: String,
-    pub alternative_channel_id: String
+    #[serde(rename(deserialize = "alternative channel id"))]
+    pub alternative_channel_id: String,
+    #[serde(rename(deserialize = "material types"))]
+    pub material_types: Vec<(String, String)>,
 }
 
 impl Config {

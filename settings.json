@@ -1,6 +1,9 @@
 {
-    "discord_token": "discord token value",
-    "database_path": "database path value",
-    "main_channel_id": "main channel id value",
-    "alternative_channel_id": "alternative channel id value"
+    "discord token": "discord token value",
+    "database path": "materials/materials.db",
+    "main channel id": "main channel id value",
+    "alternative channel id": "alternative channel id value",
+    "material types": [
+	    ["operating system", "kernel.org"]
+    ]
 }
