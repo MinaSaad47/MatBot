@@ -18,10 +18,13 @@ fn available_json_settings() {
 fn valid_json_settings() {
     let json_settings = br#"
         {
-            "discord_token": "discord token value",
-            "database_path": "database path value",
-            "main_channel_id": "main channel id value",
-            "alternative_channel_id": "alternative channel id value"
+            "discord token": "discord token value",
+            "database path": "database path value",
+            "main channel id": "main channel id value",
+            "alternative channel id": "alternative channel id value",
+            "material types": [
+                ["OS", "kernel.org"]
+            ]
         }
     "#;
 
@@ -40,6 +43,8 @@ fn valid_json_settings() {
     assert_eq!(conf.database_path, "database path value");
     assert_eq!(conf.main_channel_id, "main channel id value");
     assert_eq!(conf.alternative_channel_id, "alternative channel id value");
+    assert_eq!(conf.material_types[0].0, "OS");
+    assert_eq!(conf.material_types[0].1, "kernel.org");
 }
 
 #[test]
