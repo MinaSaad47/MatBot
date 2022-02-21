@@ -1,9 +1,26 @@
-use  matbot::{
-    config::Config,
-    materials::MatRow
+use serenity::{
+    framework::standard::{
+        StandardFramework,
+        CommandResult,
+        macros::{
+            command,
+            group
+        },
+    },
+    prelude::*,
 };
 
-fn main() {
+use  matbot::{
+    config::Config,
+    materials::MatRow,
+    event_handler::Handler
+};
+
+#[group]
+struct General;
+
+#[tokio::main]
+async fn main() {
     let conf = Config::from_json_file("settings.json");
 
     let conf = match conf {
@@ -22,4 +39,21 @@ fn main() {
 
     println!("table [{:?}]:\n{:?}",
              conf.material_types[0], table);
+
+    let framework = StandardFramework::new()
+        .configure(|c| c.prefix(":"))
+        .group(&GENERAL_GROUP);
+
+    let mut client = Client::builder(&conf.discord_token)
+        .event_handler(Handler)
+        .framework(framework).await;
+
+    let mut client = match client {
+        Ok(client) => client,
+        Err(error) => panic!("{}", error)
+    };
+
+    if let Err(why) = client.start().await {
+        eprintln!("An error occurred while running the client: {:?}", why);
+    }
 }
