@@ -1,5 +1,4 @@
-use std::fmt;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{Connection, Result};
 
 #[derive(Debug)]
 pub struct MatRow {
