@@ -73,7 +73,7 @@ impl EventHandler for Handler {
                         .create_option(|opt| {
                             opt
                                 .name("material")
-                                .description("display material resources")
+                                .description("choose a material type")
                                 .kind(ApplicationCommandOptionType::String)
                                 .required(true);
                             for (material, _) in &conf.material_types {
@@ -84,32 +84,57 @@ impl EventHandler for Handler {
                         })
                 })
                 .create_application_command(|cmd| {
-                    cmd.name("add")
-                        .description("add material resources")
+                    cmd.name("update")
+                        .description("update existing material type")
                         .create_option(|opt| {
                             opt
-                                .name("material")
-                                .description("choice a material to add to")
-                                .kind(ApplicationCommandOptionType::String)
-                                .required(true);
-                            for (material, _) in &conf.material_types {
-                                opt.add_string_choice(&material, &material);
-                            }
-                            opt
-                        })
-                        .create_option(|opt| {
-                            opt
-                                .name("name")
-                                .description("the new material resource name")
-                                .kind(ApplicationCommandOptionType::String)
-                                .required(true)
-                        })
-                        .create_option(|opt| {
-                            opt
-                                .name("url")
-                                .description("the url to this resource")
-                                .kind(ApplicationCommandOptionType::String)
-                                .required(true)
+                                .name("method")
+                                .description("a method to apply to a type")
+                                .kind(ApplicationCommandOptionType::SubCommandGroup)
+                                .create_sub_option(|sub_cmd| {
+                                    sub_cmd.name("add")
+                                        .description("add a resource to the type")
+                                        .kind(ApplicationCommandOptionType::SubCommand)
+                                        .create_sub_option(|sub_opt| {
+                                            sub_opt.name("material")
+                                                .required(true)
+                                                .description("choose a material type")
+                                                .kind(ApplicationCommandOptionType::String);
+                                            for (material, _) in &conf.material_types {
+                                                info!("regisering '{}' choice", material);
+                                                sub_opt.add_string_choice(material, material);
+                                            }
+                                            sub_opt
+                                        })
+                                        .create_sub_option(|name_value| {
+                                            name_value.name("name")
+                                                .required(true)
+                                                .description("Enter a new resource name")
+                                                .kind(ApplicationCommandOptionType::String)
+                                        })
+                                        .create_sub_option(|url_value| {
+                                            url_value.name("url")
+                                                .required(true)
+                                                .description("Enter a new reource url")
+                                                .kind(ApplicationCommandOptionType::String)
+                                        })
+                                })
+                                .create_sub_option(|sub_cmd| {
+                                    sub_cmd.name("delete")
+                                        .description("delete a resource from type")
+                                        .kind(ApplicationCommandOptionType::SubCommand)
+                                        .create_sub_option(|sub_opt| {
+                                            sub_opt.name("material")
+                                                .required(true)
+                                                .description("choose a material type")
+                                                .kind(ApplicationCommandOptionType::String);
+                                            for (material, _) in &conf.material_types {
+                                                info!("regisering '{}' choice", material);
+                                                sub_opt.add_string_choice(material, material);
+                                            }
+                                            sub_opt
+                                        })
+                                })
                         })
                 })
             }).await;
