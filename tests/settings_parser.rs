@@ -20,11 +20,12 @@ fn valid_json_settings() {
         {
             "discord token": "discord token value",
             "database path": "database path value",
-            "main channel id": "main channel id value",
-            "alternative channel id": "alternative channel id value",
+            "main channel id": 47,
+            "alternative channel id": 86,
             "material types": [
                 ["OS", "kernel.org"]
-            ]
+            ],
+            "application id": 64
         }
     "#;
 
@@ -41,10 +42,11 @@ fn valid_json_settings() {
 
     assert_eq!(conf.discord_token, "discord token value");
     assert_eq!(conf.database_path, "database path value");
-    assert_eq!(conf.main_channel_id, "main channel id value");
-    assert_eq!(conf.alternative_channel_id, "alternative channel id value");
+    assert_eq!(conf.main_channel_id, 47);
+    assert_eq!(conf.alternative_channel_id, 86);
     assert_eq!(conf.material_types[0].0, "OS");
     assert_eq!(conf.material_types[0].1, "kernel.org");
+    assert_eq!(conf.app_id, 64);
 }
 
 #[test]
@@ -54,8 +56,8 @@ fn unvalid_json_settings() {
         {
             "discord_token": "discod oken value",
             "database_path": "databae path value",
-            "main_channel_id": "main chnnel id value",
-            "alternative_channel_id": "alternative channel id value"
+            "main_channel_id": 1,
+            "alternative_channel_id": 1
         }
     "#;
 
@@ -72,7 +74,7 @@ fn unvalid_json_settings() {
 
     assert_eq!(conf.discord_token, "discord token value");
     assert_eq!(conf.database_path, "database path value");
-    assert_eq!(conf.main_channel_id, "main channel id value");
-    assert_eq!(conf.alternative_channel_id, "alternative channel id value");
+    assert_eq!(conf.main_channel_id, 0);
+    assert_eq!(conf.alternative_channel_id, 0);
 }
 
