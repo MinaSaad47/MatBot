@@ -33,6 +33,7 @@ const COLOURS: [Colour; 7] = [
 ];
 
 pub fn display_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
+    debug!("cmd_opts:\n{:?}", cmd_opts);
     let material_type = cmd_opts
         .get(0)
         .as_ref()
@@ -74,4 +75,24 @@ pub fn display_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
                 .fields(mat_row)
         })
         .clone()
+}
+
+pub fn update_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
+    debug!("cmd_opts:\n{:?}", cmd_opts);
+    let sub_cmd = cmd_opts.get(0).unwrap().options.get(0).unwrap();
+    match sub_cmd.name.as_str() {
+        "add" => add_res_msg(&sub_cmd.options),
+        "delete" => delete_res_msg(&sub_cmd.options),
+        _ => unreachable!(),
+    }
+}
+
+fn add_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
+    info!("a user requested update 'add method'");
+    unimplemented!()
+}
+
+fn delete_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
+    info!("a user requested update 'delete method'");
+    unimplemented!()
 }

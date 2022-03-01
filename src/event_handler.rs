@@ -38,6 +38,7 @@ impl EventHandler for Handler {
             let resdata = match command.data.name.as_str() {
                 "version" => version_res_msg(),
                 "display" => display_res_msg(&command.data.options),
+                "update" => update_res_msg(&command.data.options),
                 _ => unreachable!()
             };
             if let Err(why) = command
