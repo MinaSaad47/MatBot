@@ -2,7 +2,7 @@
 simple discord to post university materials as embids to discord server
 
 ## Dependencies
-- sqlite
+- ~~sqlite~~
 
 ## TODO
 - [x] settings.json parser.
@@ -17,5 +17,5 @@ simple discord to post university materials as embids to discord server
 - [x] logging system
 
 ### Optional
-- [ ] statically linked sqlite
+- [x] statically linked sqlite
 - [ ] tui
