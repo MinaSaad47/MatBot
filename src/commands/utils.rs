@@ -4,11 +4,13 @@ use rand::{self, Rng};
 
 use serenity::{
     builder::CreateInteractionResponseData,
-    model::interactions::application_command::ApplicationCommandInteractionDataOption,
+    model::{
+        interactions::application_command::ApplicationCommandInteractionDataOption, prelude::User,
+    },
     utils::Colour,
 };
 
-use crate::{config::Config, materials::MatRow};
+use crate::materials::MatRow;
 
 type ResponseData = CreateInteractionResponseData;
 type CommandOpts = Vec<ApplicationCommandInteractionDataOption>;
@@ -77,22 +79,59 @@ pub fn display_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
         .clone()
 }
 
-pub fn update_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
+pub fn update_res_msg(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
     debug!("cmd_opts:\n{:?}", cmd_opts);
+    // TODO: check user permissions
     let sub_cmd = cmd_opts.get(0).unwrap().options.get(0).unwrap();
     match sub_cmd.name.as_str() {
-        "add" => add_res_msg(&sub_cmd.options),
+        "add" => add_res_msg(&sub_cmd.options, &author.name),
         "delete" => delete_res_msg(&sub_cmd.options),
         _ => unreachable!(),
     }
 }
 
-fn add_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
-    info!("a user requested update 'add method'");
-    unimplemented!()
+fn add_res_msg(cmd_opts: &CommandOpts, author: &str) -> ResponseData {
+    info!("a user('{}') requested update 'add method'", author);
+    debug!("cmd_opts:\n{:?}", cmd_opts);
+    let material_type = cmd_opts
+        .get(0)
+        .as_ref()
+        .unwrap()
+        .value
+        .as_ref()
+        .unwrap()
+        .as_str()
+        .unwrap();
+    let name = cmd_opts
+        .get(1)
+        .as_ref()
+        .unwrap()
+        .value
+        .as_ref()
+        .unwrap()
+        .as_str()
+        .unwrap();
+    let url = cmd_opts
+        .get(2)
+        .as_ref()
+        .unwrap()
+        .value
+        .as_ref()
+        .unwrap()
+        .as_str()
+        .unwrap();
+    let matrow = MatRow::new(name, url, author);
+    if let Err(error) = matrow.insert_into_database(material_type) {
+        error!("{}", error);
+        return ResponseData::default().content(error).clone();
+    }
+    let status = format!("added {:?} to {}", matrow, material_type);
+    info!("'{}' {}", author, status);
+    ResponseData::default().content(status).clone()
 }
 
 fn delete_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
     info!("a user requested update 'delete method'");
+    debug!("cmd_opts:\n{:?}", cmd_opts);
     unimplemented!()
 }

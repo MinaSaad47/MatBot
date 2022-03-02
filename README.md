@@ -12,6 +12,8 @@ simple discord to post university materials as embids to discord server
 		- [x] version
 		- [x] display materials
 		- [ ] update existing material type
+			- [x] add new resource
+			- [ ] delete existing resource
 		- [ ] add new material types
 		- [ ] delete material type
 - [x] logging system

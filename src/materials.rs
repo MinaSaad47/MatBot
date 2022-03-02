@@ -1,27 +1,49 @@
+use chrono::prelude::*;
+use log::*;
 use rusqlite::{Connection, Result};
+
+use crate::config::Config;
 
 #[derive(Debug)]
 pub struct MatRow {
     pub id: i32,
     pub name: String,
     pub url: String,
+    pub author: String,
     pub time_added: String,
 }
 
 impl MatRow {
-    pub fn vec_from_database(
-        database_path: &str,
-        table_name: &str,
-    ) -> Result<Vec<MatRow>, &'static str> {
+    pub fn new(name: &str, url: &str, author: &str) -> Self {
+        Self {
+            id: -1,
+            name: name.to_string(),
+            url: url.to_string(),
+            author: author.to_string(),
+            time_added: Local::now().format("%F %r").to_string(),
+        }
+    }
+
+    pub fn vec_from_database(table_name: &str) -> Result<Vec<MatRow>, &'static str> {
         // TODO: check for database_path existance
-        let conn = Connection::open(database_path);
-        let conn = match conn {
+        let conf = match Config::from_json_file("settings.json") {
+            Ok(conf) => conf,
+            Err(error) => {
+                error!("{}", error);
+                panic!("{}", error);
+            }
+        };
+
+        let conn = match Connection::open(&conf.database_path) {
             Ok(conn) => conn,
             _ => return Err("could not open database file"),
         };
-        let query = format!("SELECT id, name, url, time_added FROM \"{}\"", table_name);
-        let stmt = conn.prepare(query.as_str());
-        let mut stmt = match stmt {
+
+        let query = format!(
+            "SELECT id, name, url, author, time_added FROM \"{}\"",
+            table_name
+        );
+        let mut stmt = match conn.prepare(query.as_str()) {
             Ok(stmt) => stmt,
             _ => return Err("could not prepare statement"),
         };
@@ -46,5 +68,34 @@ impl MatRow {
             })
             .collect();
         Ok(mat_rows)
+    }
+
+    pub fn insert_into_database(&self, material_type: &str) -> Result<(), &'static str> {
+        let conf = match Config::from_json_file("settings.json") {
+            Ok(conf) => conf,
+            Err(error) => {
+                error!("{}", error);
+                panic!("{}", error);
+            }
+        };
+
+        let conn = match Connection::open(&conf.database_path) {
+            Ok(conn) => conn,
+            _ => return Err("could not open database file"),
+        };
+
+        let sql = format!(
+            "INSERT INTO '{}' (name, url, author, time_added) VALUES (?1, ?2, ?3, ?4)",
+            material_type
+        );
+
+        if let Err(error) = conn.execute(
+            &sql,
+            &[&self.name, &self.url, &self.author, &self.time_added],
+        ) {
+            trace!("[ERROR] {}", error);
+            return Err("could not insert into database");
+        }
+        Ok(())
     }
 }
