@@ -31,7 +31,8 @@ impl MatRow {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 url: row.get(2)?,
-                time_added: row.get(3)?,
+                author: row.get(3)?,
+                time_added: row.get(4)?,
             })
         });
         let mat_rows = match mat_rows {

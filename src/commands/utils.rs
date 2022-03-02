@@ -46,25 +46,25 @@ pub fn display_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
 
     info!("a user requested '{}' material type", material_type);
 
-    let conf = match Config::from_json_file("settings.json") {
-        Ok(conf) => conf,
+    let mat_row: Vec<(String, String, bool)> = match MatRow::vec_from_database(material_type) {
+        Ok(mat_row) => mat_row
+            .into_iter()
+            .map(|row| {
+                (
+                    format!(
+                        "**__{}__** \t\t\t\t\t\tby *{}* at *{}*",
+                        row.name, row.author, row.time_added
+                    ),
+                    format!("- <{}>", row.url),
+                    false,
+                )
+            })
+            .collect(),
         Err(error) => {
             error!("{}", error);
             panic!("{}", error);
         }
     };
-
-    let mat_row: Vec<(String, String, bool)> =
-        match MatRow::vec_from_database(&conf.database_path, material_type) {
-            Ok(mat_row) => mat_row
-                .into_iter()
-                .map(|row| (row.name, format!("- [{}]({})", row.url, row.url), false))
-                .collect(),
-            Err(error) => {
-                error!("{}", error);
-                panic!("{}", error);
-            }
-        };
 
     ResponseData::default()
         .create_embed(|embed| {
