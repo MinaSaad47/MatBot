@@ -60,6 +60,13 @@ pub fn update_app_cmd(materials: &Vec<String>) -> AppCommand {
     cmd
 }
 
+pub fn publish_app_cmd() -> AppCommand {
+    let mut cmd = AppCommand::default();
+    cmd.name("publish")
+        .description("publish to the configured channels id if so");
+    cmd
+}
+
 fn materials_cmd_opt(materials: &Vec<String>, required: bool) -> CommandOpt {
     let mut opt = CommandOpt::default();
     opt.name("material")

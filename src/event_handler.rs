@@ -18,7 +18,7 @@ use serenity::{
 use crate::{
     config::Config,
     commands::{
-        utils::*,
+        res::*,
         cmds::*,
     },
 };
@@ -39,6 +39,7 @@ impl EventHandler for Handler {
                 "version" => version_res_msg(),
                 "display" => display_res_msg(&command.data.options),
                 "update" => update_res_msg(&command.data.options, &command.user),
+                "publish" => publish_res_msg(&ctx.http).await,
                 _ => unreachable!()
             };
             if let Err(why) = command
@@ -74,10 +75,11 @@ impl EventHandler for Handler {
                     version_app_cmd(),
                     display_app_cmd(&material_types),
                     update_app_cmd(&material_types),
+                    publish_app_cmd(),
                 ])
             }).await;
 
-        debug!("set_global_application_commands():\n{:?}", commands);
+        debug!("set_global_application_commands():\n{:#?}", &commands);
     }
 }
 

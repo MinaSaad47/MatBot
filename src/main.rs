@@ -37,6 +37,6 @@ async fn main() {
     };
 
     if let Err(why) = client.start().await {
-        error!("An error occurred while running the client: {:?}", why);
+        error!("An error occurred while running the client: {:#?}", why);
     }
 }
