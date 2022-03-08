@@ -65,7 +65,6 @@ impl EventHandler for Handler {
         let conf = Config::from_json_file("settings.json").unwrap();
         let material_types = conf.material_types.iter()
             .map(|(material, _)| {
-                info!("found '{}' material type", material);
                 material.clone()
             }).collect();
         let commands =

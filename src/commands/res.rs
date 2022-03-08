@@ -141,6 +141,21 @@ pub async fn publish_res_msg(http: &impl AsRef<Http>) -> ResponseData {
         }
     };
 
+    let history = match ChannelId(conf.main_channel_id)
+        .messages(http, |get_msg| get_msg.limit(100)).await {
+            Ok(history) => history,
+            Err(error) => {
+                error!("{}", error);
+                panic!("{}", error);
+            }
+    };
+
+    if let Err(error) = ChannelId(conf.main_channel_id)
+        .delete_messages(http, history).await {
+        error!("{}", error);
+        panic!("{}", error);
+    }
+
     for (material, _) in &conf.material_types {
         let fields = gen_resources_fields(material, false);
         if let Err(error) = ChannelId(conf.main_channel_id)

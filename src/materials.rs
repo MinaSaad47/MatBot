@@ -99,3 +99,40 @@ impl MatRow {
         Ok(())
     }
 }
+
+pub fn build_database() -> Result<(), &'static str> {
+    let conf = match Config::from_json_file("settings.json") {
+        Ok(conf) => conf,
+        Err(error) => {
+            error!("{}", error);
+            panic!("{}", error);
+        }
+    };
+
+    let conn = match Connection::open(&conf.database_path) {
+        Ok(conn) => conn,
+        _ => return Err("could not open database file"),
+    };
+
+    for (material, _) in &conf.material_types {
+        let sql = format!(
+            r#"CREATE TABLE IF NOT EXISTS '{}' (
+                            'id'	INTEGER NOT NULL UNIQUE,
+                            'name'	TEXT,
+                            'url'	TEXT,
+                            'author'	TEXT,
+                            'time_added'	TEXT,
+                            PRIMARY KEY('id' AUTOINCREMENT)
+          )"#,
+            material
+        );
+        match conn.execute(&sql, []) {
+            Ok(_) => info!("the database now has {}", material),
+            Err(error) => {
+                trace!("[ERROR] {}", error);
+                return Err("could not build the database");
+            }
+        }
+    }
+    Ok(())
+}
