@@ -6,21 +6,21 @@ use serenity::{
 type AppCommand = CreateApplicationCommand;
 type CommandOpt = CreateApplicationCommandOption;
 
-pub fn version_app_cmd() -> AppCommand {
+pub fn version() -> AppCommand {
     let mut cmd = AppCommand::default();
     cmd.name("version").description("Request MatBot Version.");
     cmd
 }
 
-pub fn display_app_cmd(materials: &Vec<String>) -> AppCommand {
+pub fn display(materials: &Vec<String>) -> AppCommand {
     let mut cmd = AppCommand::default();
     cmd.name("display")
         .description("get material resources of a certain type")
-        .set_options(vec![materials_cmd_opt(materials, true)]);
+        .set_options(vec![materials_opt(materials, true)]);
     cmd
 }
 
-pub fn update_app_cmd(materials: &Vec<String>) -> AppCommand {
+pub fn update(materials: &Vec<String>) -> AppCommand {
     let mut cmd = AppCommand::default();
     cmd.name("update")
         .description("update existing material type")
@@ -33,7 +33,7 @@ pub fn update_app_cmd(materials: &Vec<String>) -> AppCommand {
                         .name("add")
                         .description("add a resource to the type")
                         .kind(ApplicationCommandOptionType::SubCommand)
-                        .add_sub_option(materials_cmd_opt(materials, true))
+                        .add_sub_option(materials_opt(materials, true))
                         .create_sub_option(|name_value| {
                             name_value
                                 .name("name")
@@ -54,20 +54,20 @@ pub fn update_app_cmd(materials: &Vec<String>) -> AppCommand {
                         .name("delete")
                         .description("delete a resource from type")
                         .kind(ApplicationCommandOptionType::SubCommand)
-                        .add_sub_option(materials_cmd_opt(materials, true))
+                        .add_sub_option(materials_opt(materials, true))
                 })
         });
     cmd
 }
 
-pub fn publish_app_cmd() -> AppCommand {
+pub fn publish() -> AppCommand {
     let mut cmd = AppCommand::default();
     cmd.name("publish")
         .description("publish to the configured channels id if so");
     cmd
 }
 
-fn materials_cmd_opt(materials: &Vec<String>, required: bool) -> CommandOpt {
+fn materials_opt(materials: &Vec<String>, required: bool) -> CommandOpt {
     let mut opt = CommandOpt::default();
     opt.name("material")
         .description("choose a material type")

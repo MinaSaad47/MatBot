@@ -19,7 +19,7 @@ type CommandOpts = Vec<ApplicationCommandInteractionDataOption>;
 
 const VERSION: &'static str = "0.1.0";
 
-pub fn version_res_msg() -> ResponseData {
+pub fn version() -> ResponseData {
     info!("a user requested the version");
     ResponseData::default()
         .content(format!("MatBot Version: {}", VERSION))
@@ -36,7 +36,7 @@ const COLOURS: [Colour; 7] = [
     Colour::DARK_GREY,
 ];
 
-pub fn display_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
+pub fn display(cmd_opts: &CommandOpts) -> ResponseData {
     debug!("cmd_opts:\n{:#?}", cmd_opts);
     let material_type = cmd_opts
         .get(0)
@@ -63,18 +63,18 @@ pub fn display_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
         .clone()
 }
 
-pub fn update_res_msg(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
+pub fn update(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
     debug!("cmd_opts:\n{:#?}", cmd_opts);
     // TODO: check user permissions
     let sub_cmd = cmd_opts.get(0).unwrap().options.get(0).unwrap();
     match sub_cmd.name.as_str() {
-        "add" => add_res_msg(&sub_cmd.options, &author.name),
-        "delete" => delete_res_msg(&sub_cmd.options),
+        "add" => add(&sub_cmd.options, &author.name),
+        "delete" => delete(&sub_cmd.options),
         _ => unreachable!(),
     }
 }
 
-fn add_res_msg(cmd_opts: &CommandOpts, author: &str) -> ResponseData {
+fn add(cmd_opts: &CommandOpts, author: &str) -> ResponseData {
     info!("a user('{}') requested update 'add method'", author);
     debug!("cmd_opts:\n{:#?}", cmd_opts);
     let material_type = cmd_opts
@@ -124,13 +124,13 @@ fn add_res_msg(cmd_opts: &CommandOpts, author: &str) -> ResponseData {
     ResponseData::default().content(status).clone()
 }
 
-fn delete_res_msg(cmd_opts: &CommandOpts) -> ResponseData {
+fn delete(cmd_opts: &CommandOpts) -> ResponseData {
     info!("a user requested update 'delete method'");
     debug!("cmd_opts:\n{:#?}", cmd_opts);
     unimplemented!()
 }
 
-pub async fn publish_res_msg(http: &impl AsRef<Http>) -> ResponseData {
+pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
     info!("a user requested to publish");
 
     let conf = match Config::from_json_file("settings.json") {

@@ -18,8 +18,8 @@ use serenity::{
 use crate::{
     config::Config,
     commands::{
-        res::*,
-        cmds::*,
+        requests,
+        responses,
     },
 };
 
@@ -36,10 +36,10 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, int: Interaction) {
         if let Interaction::ApplicationCommand(command) = int {
             let resdata = match command.data.name.as_str() {
-                "version" => version_res_msg(),
-                "display" => display_res_msg(&command.data.options),
-                "update" => update_res_msg(&command.data.options, &command.user),
-                "publish" => publish_res_msg(&ctx.http).await,
+                "version" => responses::version(),
+                "display" => responses::display(&command.data.options),
+                "update" => responses::update(&command.data.options, &command.user),
+                "publish" => responses::publish(&ctx.http).await,
                 _ => unreachable!()
             };
             if let Err(why) = command
@@ -71,10 +71,10 @@ impl EventHandler for Handler {
             ApplicationCommand::set_global_application_commands(&ctx.http,
                                                                 |cmds| {
                 cmds.set_application_commands(vec![
-                    version_app_cmd(),
-                    display_app_cmd(&material_types),
-                    update_app_cmd(&material_types),
-                    publish_app_cmd(),
+                    requests::version(),
+                    requests::display(&material_types),
+                    requests::update(&material_types),
+                    requests::publish(),
                 ])
             }).await;
 
