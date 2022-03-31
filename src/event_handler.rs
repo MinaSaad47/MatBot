@@ -1,3 +1,4 @@
+use ansi_term::Color;
 use log::*;
 
 use serenity::{
@@ -18,8 +19,8 @@ use serenity::{
 use crate::{
     config::Config,
     commands::{
-        res::*,
-        cmds::*,
+        requests,
+        responses,
     },
 };
 
@@ -29,17 +30,24 @@ pub struct Handler;
 impl EventHandler for Handler {
     #[allow(unused_variables)]
     async fn message(&self, ctx: Context, msg: Message) {
-
+        if !msg.author.bot {
+            debug!(
+                "'{}': `{}`",
+                   Color::Blue.paint(msg.author.name),
+                   msg.content,
+            );
+        }
     }
 
     #[allow(unused_variables)]
     async fn interaction_create(&self, ctx: Context, int: Interaction) {
         if let Interaction::ApplicationCommand(command) = int {
             let resdata = match command.data.name.as_str() {
-                "version" => version_res_msg(),
-                "display" => display_res_msg(&command.data.options),
-                "update" => update_res_msg(&command.data.options, &command.user),
-                "publish" => publish_res_msg(&ctx.http).await,
+                "version" => responses::version(),
+                "display" => responses::display(&command.data.options),
+                "add" => responses::add(&command.data.options, &command.user),
+                "delete" => responses::delete(&command.data.options, &command.user),
+                "publish" => responses::publish(&ctx.http).await,
                 _ => unreachable!()
             };
             if let Err(why) = command
@@ -60,10 +68,13 @@ impl EventHandler for Handler {
 
     #[allow(unused_variables)]
     async fn ready(&self, ctx: Context, rdy: Ready) {
-        info!("{} is connected", rdy.user.name);
+        info!(
+            "{} {}",
+            Color::Green.blink().italic().paint(rdy.user.name),
+            Color::Green.blink().paint("is connected"));
 
         let conf = Config::from_json_file("settings.json").unwrap();
-        let material_types = conf.material_types.iter()
+        let material_types: Vec<String> = conf.material_types.iter()
             .map(|(material, _)| {
                 material.clone()
             }).collect();
@@ -71,10 +82,11 @@ impl EventHandler for Handler {
             ApplicationCommand::set_global_application_commands(&ctx.http,
                                                                 |cmds| {
                 cmds.set_application_commands(vec![
-                    version_app_cmd(),
-                    display_app_cmd(&material_types),
-                    update_app_cmd(&material_types),
-                    publish_app_cmd(),
+                    requests::version(),
+                    requests::display(&material_types),
+                    requests::add(&material_types),
+                    requests::delete(&material_types),
+                    requests::publish(),
                 ])
             }).await;
 

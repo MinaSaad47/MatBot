@@ -1,3 +1,3 @@
 #[macro_use]
-pub mod res;
-pub mod cmds;
+pub mod responses;
+pub mod requests;
