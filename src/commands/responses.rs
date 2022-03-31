@@ -1,3 +1,4 @@
+use ansi_term::Color;
 use log::*;
 use url::{Url,ParseError};
 use rand::{self, Rng};
@@ -173,6 +174,7 @@ pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
             error!("{}", error);
             panic!("{}", error);
         }
+        info!("Published: `{}` Material Type", Color::Green.paint(material))
     }
     ResponseData::default()
         .content("Materials updated successfully")

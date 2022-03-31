@@ -1,3 +1,4 @@
+use ansi_term::Color;
 use log::*;
 
 use serenity::{
@@ -29,7 +30,11 @@ pub struct Handler;
 impl EventHandler for Handler {
     #[allow(unused_variables)]
     async fn message(&self, ctx: Context, msg: Message) {
-
+        debug!(
+            "'{}': `{}`",
+               Color::Blue.paint(msg.author.name),
+               msg.content,
+        );
     }
 
     #[allow(unused_variables)]
@@ -60,7 +65,10 @@ impl EventHandler for Handler {
 
     #[allow(unused_variables)]
     async fn ready(&self, ctx: Context, rdy: Ready) {
-        info!("{} is connected", rdy.user.name);
+        info!(
+            "{} {}",
+            Color::Green.blink().italic().paint(rdy.user.name),
+            Color::Green.blink().paint("is connected"));
 
         let conf = Config::from_json_file("settings.json").unwrap();
         let material_types = conf.material_types.iter()

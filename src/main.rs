@@ -1,5 +1,6 @@
 use log::*;
 use env_logger;
+use ansi_term::Color;
 use serenity::{
     framework::standard::{
         StandardFramework,
@@ -49,7 +50,7 @@ async fn main() {
             panic!("{}", error);
         }
     };
-
+    info!("{}", Color::Yellow.paint("starting the bot ..."));
     if let Err(why) = client.start().await {
         error!("An error occurred while running the client: {:#?}", why);
     }
