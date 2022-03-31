@@ -12,7 +12,7 @@ pub fn version() -> AppCommand {
     cmd
 }
 
-pub fn display(materials: &Vec<String>) -> AppCommand {
+pub fn display(materials: &[String]) -> AppCommand {
     let mut cmd = AppCommand::default();
     cmd.name("display")
         .description("get material resources of a certain type")
@@ -20,44 +20,40 @@ pub fn display(materials: &Vec<String>) -> AppCommand {
     cmd
 }
 
-pub fn update(materials: &Vec<String>) -> AppCommand {
-    let mut cmd = AppCommand::default();
-    cmd.name("update")
-        .description("update existing material type")
+pub fn add(materials: &[String]) -> AppCommand {
+    AppCommand::default()
+        .name("add")
+        .description("add a resource to the type")
+        .add_option(materials_opt(materials, true))
+        .create_option(|name_value| {
+            name_value
+                .name("name")
+                .required(true)
+                .description("Enter a new resource name")
+                .kind(ApplicationCommandOptionType::String)
+        })
+        .create_option(|url_value| {
+            url_value
+                .name("url")
+                .required(true)
+                .description("Enter a new reource url")
+                .kind(ApplicationCommandOptionType::String)
+        })
+        .to_owned()
+}
+
+pub fn delete(materials: &[String]) -> AppCommand {
+    AppCommand::default()
+        .name("delete")
+        .description("delete resource from material type")
+        .add_option(materials_opt(materials, true))
         .create_option(|opt| {
-            opt.name("method")
-                .description("a method to apply to a type")
-                .kind(ApplicationCommandOptionType::SubCommandGroup)
-                .create_sub_option(|sub_cmd| {
-                    sub_cmd
-                        .name("add")
-                        .description("add a resource to the type")
-                        .kind(ApplicationCommandOptionType::SubCommand)
-                        .add_sub_option(materials_opt(materials, true))
-                        .create_sub_option(|name_value| {
-                            name_value
-                                .name("name")
-                                .required(true)
-                                .description("Enter a new resource name")
-                                .kind(ApplicationCommandOptionType::String)
-                        })
-                        .create_sub_option(|url_value| {
-                            url_value
-                                .name("url")
-                                .required(true)
-                                .description("Enter a new reource url")
-                                .kind(ApplicationCommandOptionType::String)
-                        })
-                })
-                .create_sub_option(|sub_cmd| {
-                    sub_cmd
-                        .name("delete")
-                        .description("delete a resource from type")
-                        .kind(ApplicationCommandOptionType::SubCommand)
-                        .add_sub_option(materials_opt(materials, true))
-                })
-        });
-    cmd
+            opt.name("index")
+                .description("Enter a resource index to delete")
+                .kind(ApplicationCommandOptionType::Integer)
+                .required(true)
+        })
+        .to_owned()
 }
 
 pub fn publish() -> AppCommand {
@@ -67,7 +63,7 @@ pub fn publish() -> AppCommand {
     cmd
 }
 
-fn materials_opt(materials: &Vec<String>, required: bool) -> CommandOpt {
+fn materials_opt(materials: &[String], required: bool) -> CommandOpt {
     let mut opt = CommandOpt::default();
     opt.name("material")
         .description("choose a material type")

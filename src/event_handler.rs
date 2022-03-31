@@ -30,11 +30,13 @@ pub struct Handler;
 impl EventHandler for Handler {
     #[allow(unused_variables)]
     async fn message(&self, ctx: Context, msg: Message) {
-        debug!(
-            "'{}': `{}`",
-               Color::Blue.paint(msg.author.name),
-               msg.content,
-        );
+        if !msg.author.bot {
+            debug!(
+                "'{}': `{}`",
+                   Color::Blue.paint(msg.author.name),
+                   msg.content,
+            );
+        }
     }
 
     #[allow(unused_variables)]
@@ -43,7 +45,8 @@ impl EventHandler for Handler {
             let resdata = match command.data.name.as_str() {
                 "version" => responses::version(),
                 "display" => responses::display(&command.data.options),
-                "update" => responses::update(&command.data.options, &command.user),
+                "add" => responses::add(&command.data.options, &command.user),
+                "delete" => responses::delete(&command.data.options, &command.user),
                 "publish" => responses::publish(&ctx.http).await,
                 _ => unreachable!()
             };
@@ -71,7 +74,7 @@ impl EventHandler for Handler {
             Color::Green.blink().paint("is connected"));
 
         let conf = Config::from_json_file("settings.json").unwrap();
-        let material_types = conf.material_types.iter()
+        let material_types: Vec<String> = conf.material_types.iter()
             .map(|(material, _)| {
                 material.clone()
             }).collect();
@@ -81,7 +84,8 @@ impl EventHandler for Handler {
                 cmds.set_application_commands(vec![
                     requests::version(),
                     requests::display(&material_types),
-                    requests::update(&material_types),
+                    requests::add(&material_types),
+                    requests::delete(&material_types),
                     requests::publish(),
                 ])
             }).await;

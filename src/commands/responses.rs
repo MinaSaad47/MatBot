@@ -13,7 +13,7 @@ use serenity::{
     utils::Colour,
 };
 
-use crate::{config::Config, materials::MatRow};
+use crate::{config::Config, materials::{MatRow, self}};
 
 type ResponseData = CreateInteractionResponseData;
 type CommandOpts = Vec<ApplicationCommandInteractionDataOption>;
@@ -64,19 +64,9 @@ pub fn display(cmd_opts: &CommandOpts) -> ResponseData {
         .clone()
 }
 
-pub fn update(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
-    debug!("cmd_opts:\n{:#?}", cmd_opts);
-    // TODO: check user permissions
-    let sub_cmd = cmd_opts.get(0).unwrap().options.get(0).unwrap();
-    match sub_cmd.name.as_str() {
-        "add" => add(&sub_cmd.options, &author.name),
-        "delete" => delete(&sub_cmd.options),
-        _ => unreachable!(),
-    }
-}
-
-fn add(cmd_opts: &CommandOpts, author: &str) -> ResponseData {
-    info!("a user('{}') requested update 'add method'", author);
+pub fn add(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
+    // TODO: check permissions
+    info!("'{}': requested `add method`", author.name);
     debug!("cmd_opts:\n{:#?}", cmd_opts);
     let material_type = cmd_opts
         .get(0)
@@ -115,20 +105,34 @@ fn add(cmd_opts: &CommandOpts, author: &str) -> ResponseData {
             panic!("{:#?}", error);
         }
     };
-    let matrow = MatRow::new(name, &abs_url, author);
+    let matrow = MatRow::new(name, &abs_url, &author.name);
     if let Err(error) = matrow.insert_into_database(material_type) {
         error!("{}", error);
         return ResponseData::default().content(error).clone();
     }
     let status = format!("added {:?} to {}", matrow, material_type);
-    info!("'{}' {}", author, status);
+    info!("'{}' {}", author.name, status);
     ResponseData::default().content(status).clone()
 }
 
-fn delete(cmd_opts: &CommandOpts) -> ResponseData {
-    info!("a user requested update 'delete method'");
+pub fn delete(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
+    // TODO: check permissions
+    info!("'{}': requested `delete method`", &author.name);
     debug!("cmd_opts:\n{:#?}", cmd_opts);
-    unimplemented!()
+    let (material_type, id) = {
+        (
+            cmd_opts.get(0).as_ref().unwrap().value.as_ref().unwrap().as_str().unwrap(),
+            cmd_opts.get(1).as_ref().unwrap().value.as_ref().unwrap().as_i64().unwrap(),
+        )
+    };
+
+    if let Err(error) = materials::delete_from_database(material_type, id as usize) {
+        error!("{}", error);
+        return ResponseData::default().content(error).clone();
+    }
+    let status = format!("resource '{}' removed from `{}`", id, material_type);
+    info!("'{}' {}", author.name, status);
+    ResponseData::default().content(status).clone()
 }
 
 pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
@@ -182,16 +186,14 @@ pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
 }
 
 fn gen_resources_fields(material_type: &str, required: bool) -> Vec<(String, String, bool)> {
-    let mut index = 0;
     let mat_row: Vec<(String, String, bool)> = match MatRow::vec_from_database(material_type) {
         Ok(mat_row) => mat_row
             .into_iter()
             .map(|row| {
-                    index = index + 1;
                     (
                         format!(
                             "**[{}] __{}__** \t\t\t\t\t\tby *{}* at *{}*",
-                            index, row.name, row.author, row.time_added),
+                            row.id, row.name, row.author, row.time_added),
                         format!("<{}>", row.url),
                         required
                     )
