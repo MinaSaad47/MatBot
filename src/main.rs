@@ -1,5 +1,6 @@
 use log::*;
 use env_logger;
+use ansi_term::Color;
 use serenity::{
     framework::standard::{
         StandardFramework,
@@ -10,6 +11,7 @@ use serenity::{
 
 use  matbot::{
     config::Config,
+    materials,
     event_handler::Handler,
 };
 
@@ -22,6 +24,14 @@ async fn main() {
         env_logger::Env::default().filter_or(env_logger::DEFAULT_FILTER_ENV, "matbot=info"));
 
     info!("Logging Enabled");
+
+    if let Err(error) = materials::build_database() {
+        error!("{}", error);
+        panic!("{}", error);
+    } else {
+        info!("material type tables updated");
+    }
+
     let framework = StandardFramework::new()
         .configure(|c| c.prefix(":"))
         .group(&GENERAL_GROUP);
@@ -35,9 +45,12 @@ async fn main() {
 
     let mut client = match client {
         Ok(client) => client,
-        Err(error) => panic!("{}", error)
+        Err(error) =>  {
+            error!("{}", error);
+            panic!("{}", error);
+        }
     };
-
+    info!("{}", Color::Yellow.paint("starting the bot ..."));
     if let Err(why) = client.start().await {
         error!("An error occurred while running the client: {:#?}", why);
     }

@@ -1,12 +1,13 @@
+use ansi_term::Color;
 use chrono::prelude::*;
 use log::*;
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, OpenFlags, Result};
 
 use crate::config::Config;
 
 #[derive(Debug)]
 pub struct MatRow {
-    pub id: i32,
+    pub id: i64,
     pub name: String,
     pub url: String,
     pub author: String,
@@ -16,7 +17,7 @@ pub struct MatRow {
 impl MatRow {
     pub fn new(name: &str, url: &str, author: &str) -> Self {
         Self {
-            id: -1,
+            id: i64::default(),
             name: name.to_string(),
             url: url.to_string(),
             author: author.to_string(),
@@ -29,7 +30,8 @@ impl MatRow {
         let conf = match Config::from_json_file("settings.json") {
             Ok(conf) => conf,
             Err(error) => {
-                error!("{}", error);
+                // unrecoverable error
+                debug!("[{}] {}", Color::Red.paint("ERROR"), error);
                 panic!("{}", error);
             }
         };
@@ -40,12 +42,16 @@ impl MatRow {
         };
 
         let query = format!(
-            "SELECT id, name, url, author, time_added FROM \"{}\"",
+            "SELECT ROWID, name, url, author, time_added FROM \"{}\"",
             table_name
         );
         let mut stmt = match conn.prepare(query.as_str()) {
             Ok(stmt) => stmt,
-            _ => return Err("could not prepare statement"),
+            Err(error) => {
+                // unrecoverable error
+                debug!("[{}] {}", Color::Red.paint("ERROR"), error);
+                panic!("{}", error);
+            }
         };
 
         let mat_rows = stmt.query_map([], |row| {
@@ -74,7 +80,8 @@ impl MatRow {
         let conf = match Config::from_json_file("settings.json") {
             Ok(conf) => conf,
             Err(error) => {
-                error!("{}", error);
+                // unrecoverable error
+                debug!("[{}] {}", Color::Red.paint("ERROR"), error);
                 panic!("{}", error);
             }
         };
@@ -93,9 +100,85 @@ impl MatRow {
             &sql,
             &[&self.name, &self.url, &self.author, &self.time_added],
         ) {
-            trace!("[ERROR] {}", error);
+            debug!("[{}] {}", Color::Red.paint("ERROR"), error);
             return Err("could not insert into database");
         }
         Ok(())
     }
+}
+
+pub fn build_database() -> Result<(), &'static str> {
+    let conf = match Config::from_json_file("settings.json") {
+        Ok(conf) => conf,
+        Err(error) => {
+            // unrecoverable error
+            debug!("[{}] {}", Color::Red.paint("ERROR"), error);
+            panic!("{}", error);
+        }
+    };
+
+    let conn = match Connection::open_with_flags(
+        &conf.database_path,
+        OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE,
+    ) {
+        Ok(conn) => conn,
+        Err(error) => {
+            debug!("[{}] {}", Color::Red.paint("ERROR"), error);
+            return Err("could not open database file");
+        }
+    };
+
+    for (material, _) in &conf.material_types {
+        let sql = format!(
+            r#"CREATE TABLE IF NOT EXISTS '{}' (
+                            'name'	TEXT,
+                            'url'	TEXT,
+                            'author'	TEXT,
+                            'time_added'	TEXT
+          )"#,
+            material
+        );
+        match conn.execute(&sql, []) {
+            Ok(_) => info!("the database now has {}", material),
+            Err(error) => {
+                debug!("[{}] {}", Color::Red.paint("ERROR"), error);
+                return Err("could not build the database");
+            }
+        }
+    }
+    Ok(())
+}
+
+pub fn delete_from_database(material_type: &str, id: usize) -> Result<(), &'static str> {
+    let conf = match Config::from_json_file("settings.json") {
+        Ok(conf) => conf,
+        Err(error) => {
+            // unrecoverable error
+            debug!("[{}] {}", Color::Red.paint("ERROR"), error);
+            panic!("{}", error);
+        }
+    };
+
+    let conn = match Connection::open(&conf.database_path) {
+        Ok(conn) => conn,
+        _ => return Err("could not open database file"),
+    };
+
+    let sql = format!("DELETE FROM '{}' WHERE ROWID = {}", material_type, id);
+
+    match conn.execute(&sql, []) {
+        Ok(number) => {
+            if number < 1 {
+                let error = "could not find the requested id";
+                debug!("[{}] {}", Color::Red.paint("ERROR"), error);
+                return Err(error);
+            }
+        }
+        Err(error) => {
+            debug!("[{}] {}", Color::Red.paint("ERROR"), error);
+            return Err("could not delete from database");
+        }
+    }
+
+    Ok(())
 }
