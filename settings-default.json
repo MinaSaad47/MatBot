@@ -1,0 +1,15 @@
+{
+    "discord token": "<string>",
+    "application id": <integer>,
+    "database path": "materials.db",
+    "main channel id": <integer>,
+    "alternative channel id": 1,
+    "material types": [
+	    ["Anaysis and Design of Algorithms", ""],
+	    ["Software Engineering", ""],
+	    ["Computer Graphics", ""],
+	    ["Concepts of Programming Languages", ""],
+	    ["Machine Learning", ""],
+	    ["Natural Language Processing", ""]
+    ]
+}
