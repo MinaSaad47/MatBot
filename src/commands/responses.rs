@@ -1,11 +1,14 @@
+use std::path::Path;
+
 use ansi_term::Color;
 use log::*;
+use tokio::fs;
 use url::{Url,ParseError};
 use rand::{self, Rng};
 
 use serenity::{
     builder::CreateInteractionResponseData,
-    http::Http,
+    http::{Http, AttachmentType},
     model::{
         id::ChannelId, interactions::application_command::ApplicationCommandInteractionDataOption,
         prelude::User,
@@ -161,6 +164,8 @@ pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
         panic!("{}", error);
     }
 
+    let database_file = fs::File::open(&conf.database_path).await;
+
     for (material, _) in &conf.material_types {
         let fields = gen_resources_fields(material, false);
         if let Err(error) = ChannelId(conf.main_channel_id)
@@ -178,7 +183,23 @@ pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
             error!("{}", error);
             panic!("{}", error);
         }
-        info!("Published: `{}` Material Type", Color::Green.paint(material))
+        info!("Published: `{}` Material Type", Color::Green.paint(material));
+    }
+    if let Err(error) = ChannelId(conf.main_channel_id)
+        .send_message(http, |msg| {
+            if let Ok(file) = &database_file {
+                msg.add_file(AttachmentType::File {
+                    file,
+                    filename: Path::new(&conf.database_path).file_name().unwrap().to_str().unwrap().to_string()
+                });
+            } else {
+                error!("could not attach database file to the message")
+            }
+            msg
+        })
+        .await {
+        error!("{}", error);
+        panic!("{}", error);
     }
     ResponseData::default()
         .content("Materials updated successfully")
