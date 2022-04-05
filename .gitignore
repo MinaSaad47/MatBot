@@ -1,2 +1,4 @@
 /target
+settings.json
 Cargo.lock
+build
