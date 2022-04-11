@@ -2,3 +2,4 @@
 settings.json
 Cargo.lock
 build
+materials.db
