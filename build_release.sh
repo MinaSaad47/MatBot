@@ -17,8 +17,8 @@ popd
 # windows build
 cargo build --release --target x86_64-pc-windows-gnu
 mkdir build/MatBot-Windows
-cp ./target/x86_64-pc-windows-gnu/release/matbot MatBot-Windows
-strip build/Windows-Linux/matbot
+cp ./target/x86_64-pc-windows-gnu/release/matbot.exe build/MatBot-Windows
+strip build/MatBot-Windows/matbot.exe
 cp ./settings-default.json build/MatBot-Windows/settings.json
 pushd build/
 7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=192m -ms=on -mmt=12 MatBot-Windows.7z MatBot-Windows
