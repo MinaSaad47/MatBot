@@ -3,7 +3,7 @@ use chrono::prelude::*;
 use log::*;
 use rusqlite::{Connection, OpenFlags, Result};
 
-use crate::config::Config;
+use crate::config::CONF;
 
 #[derive(Debug)]
 pub struct MatRow {
@@ -27,16 +27,7 @@ impl MatRow {
 
     pub fn vec_from_database(table_name: &str) -> Result<Vec<MatRow>, &'static str> {
         // TODO: check for database_path existance
-        let conf = match Config::from_json_file("settings.json") {
-            Ok(conf) => conf,
-            Err(error) => {
-                // unrecoverable error
-                debug!("[{}] {}", Color::Red.paint("ERROR"), error);
-                panic!("{}", error);
-            }
-        };
-
-        let conn = match Connection::open(&conf.database_path) {
+        let conn = match Connection::open(&CONF.database_path) {
             Ok(conn) => conn,
             _ => return Err("could not open database file"),
         };
@@ -77,16 +68,7 @@ impl MatRow {
     }
 
     pub fn insert_into_database(&self, material_type: &str) -> Result<(), &'static str> {
-        let conf = match Config::from_json_file("settings.json") {
-            Ok(conf) => conf,
-            Err(error) => {
-                // unrecoverable error
-                debug!("[{}] {}", Color::Red.paint("ERROR"), error);
-                panic!("{}", error);
-            }
-        };
-
-        let conn = match Connection::open(&conf.database_path) {
+        let conn = match Connection::open(&CONF.database_path) {
             Ok(conn) => conn,
             _ => return Err("could not open database file"),
         };
@@ -108,17 +90,8 @@ impl MatRow {
 }
 
 pub fn build_database() -> Result<(), &'static str> {
-    let conf = match Config::from_json_file("settings.json") {
-        Ok(conf) => conf,
-        Err(error) => {
-            // unrecoverable error
-            debug!("[{}] {}", Color::Red.paint("ERROR"), error);
-            panic!("{}", error);
-        }
-    };
-
     let conn = match Connection::open_with_flags(
-        &conf.database_path,
+        &CONF.database_path,
         OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE,
     ) {
         Ok(conn) => conn,
@@ -128,7 +101,7 @@ pub fn build_database() -> Result<(), &'static str> {
         }
     };
 
-    for (material, _) in &conf.material_types {
+    for (material, _) in &CONF.material_types {
         let sql = format!(
             r#"CREATE TABLE IF NOT EXISTS '{}' (
                             'name'	TEXT,
@@ -150,16 +123,7 @@ pub fn build_database() -> Result<(), &'static str> {
 }
 
 pub fn delete_from_database(material_type: &str, id: usize) -> Result<(), &'static str> {
-    let conf = match Config::from_json_file("settings.json") {
-        Ok(conf) => conf,
-        Err(error) => {
-            // unrecoverable error
-            debug!("[{}] {}", Color::Red.paint("ERROR"), error);
-            panic!("{}", error);
-        }
-    };
-
-    let conn = match Connection::open(&conf.database_path) {
+    let conn = match Connection::open(&CONF.database_path) {
         Ok(conn) => conn,
         _ => return Err("could not open database file"),
     };

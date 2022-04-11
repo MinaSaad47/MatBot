@@ -17,7 +17,7 @@ use serenity::{
 
 #[allow(unused_imports)]
 use crate::{
-    config::Config,
+    config::{Config, CONF},
     commands::{
         requests,
         responses,
@@ -73,8 +73,7 @@ impl EventHandler for Handler {
             Color::Green.blink().italic().paint(rdy.user.name),
             Color::Green.blink().paint("is connected"));
 
-        let conf = Config::from_json_file("settings.json").unwrap();
-        let material_types: Vec<String> = conf.material_types.iter()
+        let material_types: Vec<String> = CONF.material_types.iter()
             .map(|(material, _)| {
                 material.clone()
             }).collect();
