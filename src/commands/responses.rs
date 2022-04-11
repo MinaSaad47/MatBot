@@ -16,7 +16,7 @@ use serenity::{
     utils::Colour,
 };
 
-use crate::{config::Config, materials::{MatRow, self}};
+use crate::{config::CONF, materials::{MatRow, self}};
 
 type ResponseData = CreateInteractionResponseData;
 type CommandOpts = Vec<ApplicationCommandInteractionDataOption>;
@@ -140,16 +140,7 @@ pub fn delete(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
 
 pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
     info!("a user requested to publish");
-
-    let conf = match Config::from_json_file("settings.json") {
-        Ok(conf) => conf,
-        Err(error) => {
-            error!("{}", error);
-            panic!();
-        }
-    };
-
-    let history = match ChannelId(conf.main_channel_id)
+    let history = match ChannelId(CONF.main_channel_id)
         .messages(http, |get_msg| get_msg.limit(100)).await {
             Ok(history) => history,
             Err(error) => {
@@ -158,17 +149,17 @@ pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
             }
     };
 
-    if let Err(error) = ChannelId(conf.main_channel_id)
+    if let Err(error) = ChannelId(CONF.main_channel_id)
         .delete_messages(http, history).await {
         error!("{}", error);
         panic!("{}", error);
     }
 
-    let database_file = fs::File::open(&conf.database_path).await;
+    let database_file = fs::File::open(&CONF.database_path).await;
 
-    for (material, _) in &conf.material_types {
+    for (material, _) in &CONF.material_types {
         let fields = gen_resources_fields(material, false);
-        if let Err(error) = ChannelId(conf.main_channel_id)
+        if let Err(error) = ChannelId(CONF.main_channel_id)
             .send_message(http, |msg| {
                 msg.add_embed(|embed| {
                     embed
@@ -185,12 +176,12 @@ pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
         }
         info!("Published: `{}` Material Type", Color::Green.paint(material));
     }
-    if let Err(error) = ChannelId(conf.main_channel_id)
+    if let Err(error) = ChannelId(CONF.main_channel_id)
         .send_message(http, |msg| {
             if let Ok(file) = &database_file {
                 msg.add_file(AttachmentType::File {
                     file,
-                    filename: Path::new(&conf.database_path).file_name().unwrap().to_str().unwrap().to_string()
+                    filename: Path::new(&CONF.database_path).file_name().unwrap().to_str().unwrap().to_string()
                 });
             } else {
                 error!("could not attach database file to the message")

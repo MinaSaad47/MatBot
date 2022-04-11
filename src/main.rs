@@ -10,7 +10,7 @@ use serenity::{
 };
 
 use  matbot::{
-    config::Config,
+    config::CONF,
     materials,
     event_handler::Handler,
 };
@@ -36,11 +36,9 @@ async fn main() {
         .configure(|c| c.prefix(":"))
         .group(&GENERAL_GROUP);
 
-    let conf = Config::from_json_file("settings.json").unwrap();
-
-    let client = Client::builder(&conf.discord_token)
+    let client = Client::builder(&CONF.discord_token)
         .event_handler(Handler)
-        .application_id(conf.app_id)
+        .application_id(CONF.app_id)
         .framework(framework).await;
 
     let mut client = match client {
