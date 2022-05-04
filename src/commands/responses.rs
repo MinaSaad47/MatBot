@@ -7,23 +7,24 @@ use url::{Url,ParseError};
 use rand::{self, Rng};
 
 use serenity::{
-    builder::CreateInteractionResponseData,
-    http::{Http, AttachmentType},
+    builder::{CreateInteractionResponseData, CreateEmbed},
+    http::Http,
     model::{
         id::ChannelId, interactions::application_command::ApplicationCommandInteractionDataOption,
         prelude::User,
+        channel::AttachmentType,
     },
     utils::Colour,
 };
 
 use crate::{config::CONF, materials::{MatRow, self}};
 
-type ResponseData = CreateInteractionResponseData;
+type ResponseData<'a> = CreateInteractionResponseData<'a>;
 type CommandOpts = Vec<ApplicationCommandInteractionDataOption>;
 
 const VERSION: &'static str = "0.1.0";
 
-pub fn version() -> ResponseData {
+pub fn version<'a>() -> ResponseData<'a> {
     info!("a user requested the version");
     ResponseData::default()
         .content(format!("MatBot Version: {}", VERSION))
@@ -40,7 +41,7 @@ const COLOURS: [Colour; 7] = [
     Colour::DARK_GREY,
 ];
 
-pub fn display(cmd_opts: &CommandOpts) -> ResponseData {
+pub fn display<'a>(cmd_opts: &CommandOpts) -> ResponseData<'a> {
     debug!("cmd_opts:\n{:#?}", cmd_opts);
     let material_type = cmd_opts
         .get(0)
@@ -56,18 +57,19 @@ pub fn display(cmd_opts: &CommandOpts) -> ResponseData {
 
     let material_fields = gen_resources_fields(material_type, false);
 
-    ResponseData::default()
-        .create_embed(|embed| {
-            embed
+    let embed = CreateEmbed::default()
                 .title(material_type)
                 .footer(|f| f.text("STUDY WELL !!!"))
                 .colour(COLOURS[rand::thread_rng().gen_range(0..COLOURS.len())])
                 .fields(material_fields)
-        })
+                .to_owned();
+
+    ResponseData::default()
+        .set_embed(embed)
         .clone()
 }
 
-pub fn add(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
+pub fn add<'a>(cmd_opts: & CommandOpts, author: & User) -> ResponseData<'a> {
     // TODO: check permissions
     info!("'{}': requested `add method`", author.name);
     debug!("cmd_opts:\n{:#?}", cmd_opts);
@@ -118,7 +120,7 @@ pub fn add(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
     ResponseData::default().content(status).clone()
 }
 
-pub fn delete(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
+pub fn delete<'a>(cmd_opts: &CommandOpts, author: &User) -> ResponseData<'a> {
     // TODO: check permissions
     info!("'{}': requested `delete method`", &author.name);
     debug!("cmd_opts:\n{:#?}", cmd_opts);
@@ -138,7 +140,7 @@ pub fn delete(cmd_opts: &CommandOpts, author: &User) -> ResponseData {
     ResponseData::default().content(status).clone()
 }
 
-pub async fn publish(http: &impl AsRef<Http>) -> ResponseData {
+pub async fn publish<'a>(http: &impl AsRef<Http>) -> ResponseData<'a> {
     info!("a user requested to publish");
     let history = match ChannelId(CONF.main_channel_id)
         .messages(http, |get_msg| get_msg.limit(100)).await {

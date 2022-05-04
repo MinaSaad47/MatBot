@@ -36,7 +36,7 @@ async fn main() {
         .configure(|c| c.prefix(":"))
         .group(&GENERAL_GROUP);
 
-    let client = Client::builder(&CONF.discord_token)
+    let client = Client::builder(&CONF.discord_token, GatewayIntents::empty())
         .event_handler(Handler)
         .application_id(CONF.app_id)
         .framework(framework).await;
