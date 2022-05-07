@@ -142,20 +142,6 @@ pub fn delete<'a>(cmd_opts: &CommandOpts, author: &User) -> ResponseData<'a> {
 
 pub async fn publish<'a>(http: &impl AsRef<Http>) -> ResponseData<'a> {
     info!("a user requested to publish");
-    let history = match ChannelId(CONF.main_channel_id)
-        .messages(http, |get_msg| get_msg.limit(100)).await {
-            Ok(history) => history,
-            Err(error) => {
-                error!("{}", error);
-                panic!("{}", error);
-            }
-    };
-
-    if let Err(error) = ChannelId(CONF.main_channel_id)
-        .delete_messages(http, history).await {
-        error!("{}", error);
-        panic!("{}", error);
-    }
 
     let database_file = fs::File::open(&CONF.database_path).await;
 
