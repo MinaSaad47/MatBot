@@ -1,5 +1,5 @@
-/target
+target/
 settings.json
 Cargo.lock
 build
-materials.db
+materials/
